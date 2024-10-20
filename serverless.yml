@@ -1,0 +1,33 @@
+org: netzwerk
+app: gen-auth-api
+service: gen-auth-api
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+
+plugins:
+  - serverless-offline
+
+functions:
+  api:
+    handler: index.handler
+    events:
+      - httpApi:
+          path: /{proxy+}
+          method: any
+
+  facedetection:
+    handler: ./gen-auth-core/FaceDetection/index.handler
+    events:
+      - httpApi:
+          path: /core/facedetection/{proxy+}
+          method: any
+
+  livelinesstracker:
+    handler: ./gen-auth-core/LivelinessTracker/index.handler
+    events:
+      - httpApi:
+          path: /core/livetracker/{proxy+}
+          method: any
