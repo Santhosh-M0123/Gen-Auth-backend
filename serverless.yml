@@ -6,6 +6,17 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: nodejs18.x
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:GetObject
+        - s3:ListBucket
+        - rekognition:DetectFaces
+        - dynamodb:PutItem
+      Resource:
+        - arn:aws:s3:::genauthusers 
+        - arn:aws:s3:::genauthusers/*
+        - arn:aws:dynamodb:us-east-1:*:table/gen-auth-faceprints 
 
 plugins:
   - serverless-offline
@@ -19,15 +30,24 @@ functions:
           method: any
 
   facedetection:
-    handler: ./gen-auth-core/FaceDetection/index.handler
+    handler: ./core/FaceDetection/index.handler
     events:
       - httpApi:
           path: /core/facedetection/{proxy+}
           method: any
 
-  livelinesstracker:
-    handler: ./gen-auth-core/LivelinessTracker/index.handler
+  livelinessTracker:
+    handler: ./core/LivelinessTracker/index.handler
     events:
       - httpApi:
           path: /core/livetracker/{proxy+}
           method: any
+
+  # Define the S3 trigger function
+  s3ImageUpload:
+    handler: ./core/IndexFace/index.handler  # Update with your Lambda path
+    events:
+      - s3:
+          bucket: genauthusers  # Your existing S3 bucket name
+          event: s3:ObjectCreated:*  # Trigger on object creation
+          existing: true  # Since the bucket already exists
